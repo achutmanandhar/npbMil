@@ -20,7 +20,7 @@ function [post, nfeTerms] = npbMilMvn(varargin)
 %           myOptions.pruneThreshold = .02 (default)
 %           myOptions.featsUncorrelated = 0 (default)
 
-keyboard;
+% keyboard;
 [bags KH1 KH0 myOptions] = parseInputs(varargin);
 % for bag labels consistency
 bags.label(bags.label==-1,:) = 0;
@@ -188,7 +188,7 @@ function [prior,eStep] = npbMilInitialization(bags,KH1,KH0,myOptions)
 % post(1) = H1 Mixture Model
 % post(2) = H0 Mixture Model
 % post(1) = H1H0 Mixture Model
-keyboard;
+% keyboard;
     [N,D] = size(bags.data);
     KH = [KH1 KH0];
     
@@ -319,10 +319,14 @@ function instanceLogLikelihoodGivenHmodel = npbMilInstanceLogLikelihoodGivenHmod
 end
 
 function post = npbMilMvnUpdate(bags,prior,eStep,myOptions)
-keyboard;
+% keyboard;
+% 25/01/2016 AM
+% In prtMilBrvMixture, need to add the following steps
     for mm=1:2
         post(mm) = npbMilMvnUpdateThisMixMod(bags,prior(mm),eStep(mm),myOptions);
     end    
+% 25/01/2016 AM
+% In prtMilBrvMixture, mixing proportion should be taken care by an object in prtBrvDiscrete
     post(1).countsH   = sum(eStep(1).rH1H0(bags.label==1,:),1);   
     post(1).countsH(post(1).countsH==0) = eps;
     post(1).alpha  = post(1).countsH + prior(1).alpha;
@@ -330,10 +334,20 @@ keyboard;
 end
 
 function post = npbMilMvnUpdateThisMixMod(bags,prior,eStep,myOptions)
-keyboard;
+% keyboard;
     [~,D] = size(bags.data);
     K = size(prior.meanMean,2);
+    
+    % 25/01/2016 AM
+    % In prtBrvMixture, resp or weights is known as training.componentMemberships
+    % i.e. in prtMilBrvMixture, training.componentMemberships should be
+    % weighted by rHr
     resp = eStep.rHrH1H0;   
+    
+    % 25/01/2016 AM
+    % In prtBrvMixture, mixing proportions are defined by class prtBrvDiscrete
+    % How does training.componentMemberships affect mixing propertions'
+    % updates?
     post.counts = sum(resp,1);
     post.counts(post.counts==0) = eps;
     counts = post.counts;
@@ -397,7 +411,7 @@ keyboard;
 end
 
 function eStep = npbMilMvnExpectation(bags,eStep,post,myOptions)
-keyboard;
+% keyboard;
     eStep(1).logEtaTilda    = psi(0,post(1).alpha) - psi(0,sum(post(1).alpha));
 %     for nIter=1:5
         for mm=1:2
@@ -459,7 +473,7 @@ keyboard;
 end
 
 function eStep = npbMilMvnExpectationThisMixMod(bags,post,eStep,rH1H0ThisMixMod,myOptions)
-keyboard;
+% keyboard;
     [N,D] = size(bags.data);
     dims = 1:D;
     K = length(post.pi);
@@ -515,6 +529,8 @@ keyboard;
         variationalAvgLL(variationalAvgLL==-inf|variationalAvgLL==0)=min(variationalAvgLL(variationalAvgLL~=0));
     end
     
+    % 25/01/2016 AM
+    % In contrast to the eStep in standard prtBrvMvn, rHTilda is weighted by rH1H0ThisMixMod
     logrHTilda = bsxfun( @plus,logPiTilda,bsxfun(@times,rH1H0ThisMixMod,variationalAvgLL) );  % sim to eq (13) % [N*1]
 
     if ( any(isinf(logrHTilda(:,k))) || any(isnan(logrHTilda(:,k))) ) % check for inf/nan
@@ -542,7 +558,7 @@ keyboard;
 end
 
 function nfeTerms = npbMilNegFreeEnergy(prior,post,eStep,myOptions)
-keyboard;
+% keyboard;
 % Based on
 % W. D. Penny, "A Variational Bayesian Framework for d-dimensional Graphical
 % Models"
@@ -632,7 +648,7 @@ keyboard;
 end
 
 function [prior post] = npbMilPrune(prior,post,myOptions)
-keyboard;
+% keyboard;
     for mm=1:2
         while any(post(mm).pi<myOptions.pruneThreshold)
             for k=1:length(post(mm).pi)
@@ -669,7 +685,7 @@ keyboard;
 end
 
 function fig1 = npbMilPlotLearnedClusters(bags,prior,post,eStep,negFreeEnergy,nIteration,myOptions)
-keyboard;
+% keyboard;
 [~,post] = npbMilPrune(prior,post,myOptions);
     fig1 = figure(1);
     d = size(bags.data,2);

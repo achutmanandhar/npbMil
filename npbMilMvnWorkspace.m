@@ -56,7 +56,7 @@ load('/Volumes/My Passport/duke/research/matlabStuffData/Research/milDatasets/ba
 myOptions.delay             = 1; % tau = 10 Don't down-weight early iterations quickly
 myOptions.forgettingRate    = .55; % kappa = {.5,.6,...,1.0} = .55 % Don't forget early iterations quickly
 myOptions.NBatches          = 20;
-myOptions.plot = false;
+myOptions.plot = true;
 myOptions.featsUncorrelated = false;
 myOptions.rndInit = true;
 myOptions.maxIteration = 500;
